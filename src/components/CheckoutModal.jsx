@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { formatPrice, buildWhatsAppMessage, waLink } from '../utils.js'
 
 // Groups the basket by producer and produces one WhatsApp message per farmer.
-export default function CheckoutModal({ groups, buyerName, onClose }) {
+export default function CheckoutModal({ groups, buyerName, onClose, onConfirm }) {
   const [name, setName] = useState(buyerName || '')
   const [sent, setSent] = useState({})
+  const total = groups.reduce((s, g) => s + g.total, 0)
+  const anySent = Object.keys(sent).length > 0
 
   const send = (group) => {
     const message = buildWhatsAppMessage({
@@ -74,8 +76,22 @@ export default function CheckoutModal({ groups, buyerName, onClose }) {
           ))}
         </div>
 
+        <div className="checkout-place">
+          <div className="checkout-grand">
+            <span>Order total</span>
+            <strong>{formatPrice(total)}</strong>
+          </div>
+          <button
+            className="btn btn-primary btn-block btn-lg"
+            onClick={() => onConfirm({ buyerName: name, groups })}
+          >
+            {anySent ? 'Done — place my order' : 'Place order'}
+          </button>
+        </div>
+
         <p className="checkout-hint">
-          💡 In this mock-up the buttons open WhatsApp with a ready-to-send order. Numbers are fake demo data.
+          💡 In this mock-up the WhatsApp buttons open a ready-to-send order (numbers are fake demo
+          data). “Place order” saves it to your order history and updates each farmer's stock.
         </p>
       </div>
     </div>

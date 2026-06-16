@@ -2,7 +2,7 @@
 
 A mock-up of a **marketplace where small farmers sell fresh produce directly to local buyers** — no supermarket in between. *Feira* is Portuguese for an open-air farmers' market.
 
-> This is an interactive front-end mock-up with fake data. There's no backend yet — accounts, listings and the basket live in the browser for the session.
+> This is an interactive front-end mock-up with fake data. There's no server yet — accounts, listings, your basket and order history are **saved in your browser** (localStorage), so they survive a refresh. Use **Reset demo data** in the footer to start fresh.
 
 ## What you can do
 
@@ -11,10 +11,11 @@ A mock-up of a **marketplace where small farmers sell fresh produce directly to 
 - **Open a farmer's profile** to read about them, where they are, and everything they have in season.
 - **Add produce to a basket** and adjust the amount in kilos.
 - **Checkout on WhatsApp**: the basket is automatically **split by farmer**, so each grower receives their own ready-to-send WhatsApp message with only their items (e.g. 5 kg of sweet potato goes to Producer 1, 2 kg of avocado goes to Producer 2).
+- **Place the order** to get a confirmation, and find everything later in your **Orders** history (🧾). Ordering reduces each farmer's available stock, and items can sell out.
 
 ### As a farmer
-- **"Sell with us"** to set up your stand — your name, farm name, location, WhatsApp and a short bio about yourself and how you grow.
-- **Post a product** in seconds: pick a picture, name it, set the price per kg, the amount available, when it was harvested, and a short description.
+- **"Sell with us"** to set up your stand — your name, farm name, location, WhatsApp, a short bio, and a **real profile photo** (or pick an avatar).
+- **Post a product** in seconds: **upload a real photo** (auto-resized to stay small), or pick an icon — then name it, set the price per kg, the amount available, when it was harvested, and a short description.
 - Your listings appear immediately on the main marketplace and under **My stand**.
 
 ## Tech
@@ -40,11 +41,11 @@ npm run preview  # preview the production build
 
 - Producer phone numbers are **fake placeholders** used only to build the `wa.me` links.
 - Prices are shown in Brazilian Reais (R$).
-- Refreshing the page resets everything to the seed data.
+- Data is stored per-browser. To wipe it, use **Reset demo data** in the footer.
 
 ## Possible next steps
 
-- Real accounts & authentication
-- A database so listings and orders persist
-- Image uploads instead of emoji pictures
-- Order tracking / confirmation from the farmer side
+- A real backend with accounts so data is shared across devices and users
+- Order tracking / confirmation from the farmer's side
+- Ratings & reviews, delivery vs pickup options
+- A public deployment (e.g. Vercel) for a shareable link

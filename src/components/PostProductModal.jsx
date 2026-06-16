@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ImageUpload from './ImageUpload.jsx'
 
 const produceEmojis = ['🥑', '🍊', '🍠', '🍅', '🥬', '🌽', '🍋', '🥔', '🍓', '🫑', '🥕', '🍆', '🍇', '🧅']
 const tints = {
@@ -12,6 +13,7 @@ export default function PostProductModal({ onClose, onPost }) {
   const [form, setForm] = useState({
     name: '',
     emoji: '🥑',
+    photo: null,
     category: 'Fruit',
     pricePerKg: '',
     available: '',
@@ -28,6 +30,7 @@ export default function PostProductModal({ onClose, onPost }) {
     onPost({
       name: form.name,
       emoji: form.emoji,
+      photo: form.photo,
       color: tints[form.emoji] || '#2f9e44',
       category: form.category,
       pricePerKg: Number(form.pricePerKg),
@@ -49,7 +52,15 @@ export default function PostProductModal({ onClose, onPost }) {
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
         </header>
 
-        <span className="field-label">Pick a picture</span>
+        <span className="field-label">Add a photo</span>
+        <ImageUpload
+          value={form.photo}
+          onChange={(photo) => setForm((f) => ({ ...f, photo }))}
+          fallback="📷"
+          hint="Upload a real photo of your produce — or just pick an icon below."
+        />
+
+        <span className="field-label">…or pick an icon</span>
         <div className="emoji-pick">
           {produceEmojis.map((e) => (
             <button

@@ -20,8 +20,15 @@ export default function CartDrawer({ open, lines, total, onClose, onChangeQty, o
           <div className="drawer-list">
             {lines.map((line) => (
               <div className="line" key={line.product.id}>
-                <span className="line-emoji" style={{ background: line.product.color }}>
-                  {line.product.emoji}
+                <span
+                  className={`line-emoji ${line.product.photo ? 'photo' : ''}`}
+                  style={
+                    line.product.photo
+                      ? { backgroundImage: `url(${line.product.photo})` }
+                      : { background: line.product.color }
+                  }
+                >
+                  {!line.product.photo && line.product.emoji}
                 </span>
                 <div className="line-info">
                   <strong>{line.product.name}</strong>

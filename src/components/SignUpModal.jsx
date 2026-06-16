@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ImageUpload from './ImageUpload.jsx'
 
 const avatars = ['👨🏽‍🌾', '👩🏼‍🌾', '🧑🏻‍🌾', '👨🏿‍🌾', '👩🏽‍🌾', '🧑🏾‍🌾']
 
@@ -10,6 +11,7 @@ export default function SignUpModal({ onClose, onCreate }) {
     whatsapp: '',
     bio: '',
     avatar: avatars[0],
+    photo: null,
   })
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -32,6 +34,16 @@ export default function SignUpModal({ onClose, onCreate }) {
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
         </header>
 
+        <span className="field-label">Your photo</span>
+        <ImageUpload
+          value={form.photo}
+          onChange={(photo) => setForm((f) => ({ ...f, photo }))}
+          fallback="🧑‍🌾"
+          shape="circle"
+          hint="A friendly face builds trust — or pick an avatar below."
+        />
+
+        <span className="field-label">…or pick an avatar</span>
         <div className="avatar-pick">
           {avatars.map((a) => (
             <button

@@ -6,7 +6,12 @@ export default function ProducerModal({ producer, products, onClose, onAdd }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <button className="icon-btn modal-close-float" onClick={onClose} aria-label="Close">✕</button>
         <div className="producer-hero">
-          <span className="producer-hero-avatar">{producer.avatar}</span>
+          <span
+            className={`producer-hero-avatar ${producer.photo ? 'photo' : ''}`}
+            style={producer.photo ? { backgroundImage: `url(${producer.photo})` } : undefined}
+          >
+            {!producer.photo && producer.avatar}
+          </span>
           <div>
             <h2>{producer.name}</h2>
             <p className="muted">{producer.farmer} · 📍 {producer.location}</p>
@@ -20,7 +25,12 @@ export default function ProducerModal({ producer, products, onClose, onAdd }) {
         <div className="producer-products">
           {products.map((p) => (
             <div className="mini-product" key={p.id}>
-              <span className="mini-emoji" style={{ background: p.color }}>{p.emoji}</span>
+              <span
+                className={`mini-emoji ${p.photo ? 'photo' : ''}`}
+                style={p.photo ? { backgroundImage: `url(${p.photo})` } : { background: p.color }}
+              >
+                {!p.photo && p.emoji}
+              </span>
               <div className="mini-info">
                 <strong>{p.name}</strong>
                 <small>{formatPrice(p.pricePerKg)}/{p.unit} · {p.available} {p.unit} left</small>

@@ -1,29 +1,42 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { producers as seedProducers, products as seedProducts, categories } from './data.js'
-import { formatPrice } from './utils.js'
+import { usePersistentState } from './usePersistentState.js'
+import { uid } from './image.js'
 import ProductCard from './components/ProductCard.jsx'
 import CartDrawer from './components/CartDrawer.jsx'
 import CheckoutModal from './components/CheckoutModal.jsx'
 import SignUpModal from './components/SignUpModal.jsx'
 import PostProductModal from './components/PostProductModal.jsx'
 import ProducerModal from './components/ProducerModal.jsx'
+import OrdersModal from './components/OrdersModal.jsx'
+import ConfirmationModal from './components/ConfirmationModal.jsx'
+import Toasts from './components/Toasts.jsx'
 
-let nextId = 100
+const KEY = 'feira.v1'
 
 export default function App() {
-  const [producers, setProducers] = useState(seedProducers)
-  const [products, setProducts] = useState(seedProducts)
-  const [me, setMe] = useState(null) // the logged-in farmer, once they sign up
+  // Persisted across refreshes.
+  const [producers, setProducers] = usePersistentState(`${KEY}.producers`, seedProducers)
+  const [products, setProducts] = usePersistentState(`${KEY}.products`, seedProducts)
+  const [me, setMe] = usePersistentState(`${KEY}.me`, null)
+  const [cart, setCart] = usePersistentState(`${KEY}.cart`, {})
+  const [orders, setOrders] = usePersistentState(`${KEY}.orders`, [])
 
-  const [cart, setCart] = useState({}) // productId -> qty in kg
+  // Ephemeral UI state.
   const [cartOpen, setCartOpen] = useState(false)
-
   const [category, setCategory] = useState('All')
   const [query, setQuery] = useState('')
   const [view, setView] = useState('market') // 'market' | 'mine'
-
-  const [modal, setModal] = useState(null) // 'signup' | 'post' | 'checkout'
+  const [modal, setModal] = useState(null) // 'signup' | 'post' | 'checkout' | 'orders' | 'confirmed'
   const [activeProducer, setActiveProducer] = useState(null)
+  const [lastOrder, setLastOrder] = useState(null)
+  const [toasts, setToasts] = useState([])
+
+  const addToast = useCallback((message, emoji) => {
+    const id = uid('toast')
+    setToasts((t) => [...t, { id, message, emoji }])
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2600)
+  }, [])
 
   const producerById = useMemo(
     () => Object.fromEntries(producers.map((p) => [p.id, p])),
@@ -74,8 +87,10 @@ export default function App() {
   }, [cartLines])
 
   const addToCart = (product, amount = 5) => {
-    setCart((c) => ({ ...c, [product.id]: Math.min((c[product.id] || 0) + amount, product.available) }))
+    const next = Math.min((cart[product.id] || 0) + amount, product.available)
+    setCart((c) => ({ ...c, [product.id]: next }))
     setCartOpen(true)
+    addToast(`${product.name} added to basket`, product.emoji)
   }
 
   const changeQty = (id, qty) => {
@@ -96,18 +111,63 @@ export default function App() {
     })
 
   const handleCreateStand = (data) => {
-    const id = `me-${nextId++}`
-    const newProducer = { ...data, id }
+    const newProducer = { ...data, id: uid('me'), avatar: data.avatar }
     setProducers((p) => [newProducer, ...p])
     setMe(newProducer)
     setModal(null)
+    addToast('Your stand is live!', '🎉')
   }
 
   const handlePost = (data) => {
-    const product = { ...data, id: `prod-${nextId++}`, producerId: me.id }
+    const product = { ...data, id: uid('prod'), producerId: me.id }
     setProducts((p) => [product, ...p])
     setModal(null)
     setView('mine')
+    addToast(`${data.name} posted to the marketplace`, '🌱')
+  }
+
+  // Turn the basket into an order: save history, decrement stock, clear basket.
+  const placeOrder = ({ buyerName, groups }) => {
+    const order = {
+      id: uid('order'),
+      date: new Date().toISOString(),
+      buyerName,
+      total: groups.reduce((s, g) => s + g.total, 0),
+      groups: groups.map((g) => ({
+        producerName: g.producer.name,
+        producerAvatar: g.producer.photo ? '📸' : g.producer.avatar,
+        total: g.total,
+        lines: g.lines.map((l) => ({
+          name: l.product.name,
+          emoji: l.product.emoji,
+          qty: l.qty,
+          unit: l.product.unit,
+          lineTotal: l.qty * l.product.pricePerKg,
+        })),
+      })),
+    }
+
+    // Reduce available stock for everything that was ordered.
+    const ordered = {}
+    for (const line of cartLines) ordered[line.product.id] = line.qty
+    setProducts((list) =>
+      list.map((p) =>
+        ordered[p.id] != null ? { ...p, available: Math.max(0, p.available - ordered[p.id]) } : p,
+      ),
+    )
+
+    setOrders((o) => [order, ...o])
+    setLastOrder(order)
+    setCart({})
+    setModal('confirmed')
+  }
+
+  const resetDemo = () => {
+    if (!confirm('Reset the demo? This clears all listings, accounts and orders saved in your browser.')) return
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(KEY))
+      .forEach((k) => localStorage.removeItem(k))
+    location.reload()
   }
 
   return (
@@ -142,13 +202,20 @@ export default function App() {
               >
                 {view === 'mine' ? 'Browse market' : 'My stand'}
               </button>
-              <span className="me-chip" title={me.name}>{me.avatar}</span>
+              <span className="me-chip" title={me.name}
+                style={me.photo ? { backgroundImage: `url(${me.photo})`, backgroundSize: 'cover' } : undefined}>
+                {!me.photo && me.avatar}
+              </span>
             </>
           ) : (
             <button className="btn btn-ghost" onClick={() => setModal('signup')}>
               Sell with us
             </button>
           )}
+          <button className="cart-btn ghost-icon" onClick={() => setModal('orders')} title="Your orders">
+            🧾
+            {orders.length > 0 && <span className="cart-badge">{orders.length}</span>}
+          </button>
           <button className="cart-btn" onClick={() => setCartOpen(true)}>
             🧺 Basket
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
@@ -180,7 +247,10 @@ export default function App() {
 
       {view === 'mine' && me && (
         <section className="mine-banner">
-          <span className="producer-hero-avatar">{me.avatar}</span>
+          <span className={`producer-hero-avatar ${me.photo ? 'photo' : ''}`}
+            style={me.photo ? { backgroundImage: `url(${me.photo})` } : undefined}>
+            {!me.photo && me.avatar}
+          </span>
           <div className="mine-banner-info">
             <h1>{me.name}</h1>
             <p className="muted">{me.farmer} · 📍 {me.location}</p>
@@ -228,6 +298,7 @@ export default function App() {
 
       <footer className="site-foot">
         <span>🧺 Feira — a mock-up marketplace connecting small farmers and local buyers.</span>
+        <button className="link-btn" onClick={resetDemo}>Reset demo data</button>
       </footer>
 
       <CartDrawer
@@ -252,8 +323,19 @@ export default function App() {
       {modal === 'checkout' && (
         <CheckoutModal
           groups={checkoutGroups}
-          buyerName=""
+          buyerName={lastOrder?.buyerName || ''}
           onClose={() => setModal(null)}
+          onConfirm={placeOrder}
+        />
+      )}
+      {modal === 'orders' && (
+        <OrdersModal orders={orders} onClose={() => setModal(null)} />
+      )}
+      {modal === 'confirmed' && lastOrder && (
+        <ConfirmationModal
+          order={lastOrder}
+          onClose={() => setModal(null)}
+          onViewOrders={() => setModal('orders')}
         />
       )}
       {activeProducer && (
@@ -264,6 +346,8 @@ export default function App() {
           onAdd={(p) => addToCart(p)}
         />
       )}
+
+      <Toasts toasts={toasts} />
     </div>
   )
 }
