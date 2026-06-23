@@ -3,6 +3,7 @@ import { formatPrice, harvestLabel } from '../utils.js'
 export default function ProductCard({ product, producer, inCartQty, onAdd, onOpenProducer }) {
   const soldOut = product.available <= 0
   const low = !soldOut && product.available <= 30
+  const fresh = product.harvestedDaysAgo <= 0
   const producerPhoto = producer.photo
 
   return (
@@ -16,12 +17,30 @@ export default function ProductCard({ product, producer, inCartQty, onAdd, onOpe
         }
       >
         {!product.photo && <span className="card-emoji">{product.emoji}</span>}
-        <span className="card-harvest">{harvestLabel(product.harvestedDaysAgo)}</span>
-        {soldOut ? (
-          <span className="card-out-badge">Sold out</span>
-        ) : (
-          low && <span className="card-low">Only {product.available} {product.unit} left</span>
-        )}
+
+        <div className="card-top">
+          <span className={`pill pill-harvest ${fresh ? 'fresh' : ''}`}>
+            {fresh && <span className="dot" />}{harvestLabel(product.harvestedDaysAgo)}
+          </span>
+          {soldOut ? (
+            <span className="pill pill-out">Sold out</span>
+          ) : (
+            low && <span className="pill pill-low">{product.available} {product.unit} left</span>
+          )}
+        </div>
+
+        <button className="card-producer" onClick={() => onOpenProducer(producer)}>
+          <span
+            className={`card-producer-avatar ${producerPhoto ? 'photo' : ''}`}
+            style={producerPhoto ? { backgroundImage: `url(${producerPhoto})` } : undefined}
+          >
+            {!producerPhoto && producer.avatar}
+          </span>
+          <span className="card-producer-text">
+            <strong>{producer.name}</strong>
+            <small>📍 {producer.location}</small>
+          </span>
+        </button>
       </div>
 
       <div className="card-body">
@@ -34,19 +53,6 @@ export default function ProductCard({ product, producer, inCartQty, onAdd, onOpe
         </div>
 
         <p className="card-desc">{product.description}</p>
-
-        <button className="card-producer" onClick={() => onOpenProducer(producer)}>
-          <span
-            className={`card-producer-avatar ${producerPhoto ? 'photo' : ''}`}
-            style={producerPhoto ? { backgroundImage: `url(${producerPhoto})` } : undefined}
-          >
-            {!producerPhoto && producer.avatar}
-          </span>
-          <span>
-            <strong>{producer.name}</strong>
-            <small>{producer.location}</small>
-          </span>
-        </button>
 
         <button className="btn btn-add" onClick={() => onAdd(product)} disabled={soldOut}>
           {soldOut

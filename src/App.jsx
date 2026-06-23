@@ -226,9 +226,10 @@ export default function App() {
       {view === 'market' && (
         <section className="hero">
           <div className="hero-text">
-            <h1>Real food, straight from the people who grow it.</h1>
+            <span className="hero-eyebrow">🌾 Harvested this week, near you</span>
+            <h1>Real food, straight from the <em>people who grow it</em>.</h1>
             <p>
-              Browse what small farmers harvested this week, fill your basket, and order directly on
+              Browse what small farmers picked this week, fill your basket, and order directly on
               WhatsApp. No supermarket in between.
             </p>
             {!me && (
@@ -346,6 +347,23 @@ export default function App() {
           onAdd={(p) => addToCart(p)}
         />
       )}
+
+      <nav className="mobilebar">
+        <button className={view === 'market' ? 'active' : ''} onClick={() => { setView('market'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+          <span>🌾</span>Browse
+        </button>
+        <button onClick={() => setModal('orders')}>
+          <span className="mb-icon">🧾{orders.length > 0 && <i>{orders.length}</i>}</span>Orders
+        </button>
+        {me && (
+          <button onClick={() => setModal('post')}>
+            <span>➕</span>Post
+          </button>
+        )}
+        <button onClick={() => setCartOpen(true)}>
+          <span className="mb-icon">🧺{cartCount > 0 && <i>{cartCount}</i>}</span>Basket
+        </button>
+      </nav>
 
       <Toasts toasts={toasts} />
     </div>
