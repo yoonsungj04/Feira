@@ -4,3 +4,7 @@ dist-ssr
 *.local
 .DS_Store
 .vite
+
+# local testing artifacts
+.playwright-mcp/
+feira-check.png

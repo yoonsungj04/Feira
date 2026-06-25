@@ -11,20 +11,21 @@ import ProducerModal from './components/ProducerModal.jsx'
 import OrdersModal from './components/OrdersModal.jsx'
 import ConfirmationModal from './components/ConfirmationModal.jsx'
 import Toasts from './components/Toasts.jsx'
+import { Basket, Search, Receipt, Plus, Pin, Sprout } from './components/Icons.jsx'
 
-const KEY = 'feira.v1'
+const KEY = 'feira.v2'
 
 export default function App() {
-  // Persisted across refreshes.
+  // Mantido entre os recarregamentos da página.
   const [producers, setProducers] = usePersistentState(`${KEY}.producers`, seedProducers)
   const [products, setProducts] = usePersistentState(`${KEY}.products`, seedProducts)
   const [me, setMe] = usePersistentState(`${KEY}.me`, null)
   const [cart, setCart] = usePersistentState(`${KEY}.cart`, {})
   const [orders, setOrders] = usePersistentState(`${KEY}.orders`, [])
 
-  // Ephemeral UI state.
+  // Estado de interface (não persistido).
   const [cartOpen, setCartOpen] = useState(false)
-  const [category, setCategory] = useState('All')
+  const [category, setCategory] = useState('Tudo')
   const [query, setQuery] = useState('')
   const [view, setView] = useState('market') // 'market' | 'mine'
   const [modal, setModal] = useState(null) // 'signup' | 'post' | 'checkout' | 'orders' | 'confirmed'
@@ -32,9 +33,9 @@ export default function App() {
   const [lastOrder, setLastOrder] = useState(null)
   const [toasts, setToasts] = useState([])
 
-  const addToast = useCallback((message, emoji) => {
+  const addToast = useCallback((message, image) => {
     const id = uid('toast')
-    setToasts((t) => [...t, { id, message, emoji }])
+    setToasts((t) => [...t, { id, message, image }])
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2600)
   }, [])
 
@@ -46,7 +47,7 @@ export default function App() {
   const visibleProducts = useMemo(() => {
     let list = products
     if (view === 'mine' && me) list = list.filter((p) => p.producerId === me.id)
-    if (category !== 'All') list = list.filter((p) => p.category === category)
+    if (category !== 'Tudo') list = list.filter((p) => p.category === category)
     if (query.trim()) {
       const q = query.toLowerCase()
       list = list.filter(
@@ -73,7 +74,7 @@ export default function App() {
   const cartTotal = cartLines.reduce((sum, l) => sum + l.qty * l.product.pricePerKg, 0)
   const cartCount = cartLines.reduce((sum, l) => sum + l.qty, 0)
 
-  // Group the basket by producer for the WhatsApp checkout.
+  // Agrupa o cesto por produtor para o checkout no WhatsApp.
   const checkoutGroups = useMemo(() => {
     const map = new Map()
     for (const line of cartLines) {
@@ -90,7 +91,7 @@ export default function App() {
     const next = Math.min((cart[product.id] || 0) + amount, product.available)
     setCart((c) => ({ ...c, [product.id]: next }))
     setCartOpen(true)
-    addToast(`${product.name} added to basket`, product.emoji)
+    addToast(`${product.name} no cesto`, product.photo)
   }
 
   const changeQty = (id, qty) => {
@@ -111,11 +112,11 @@ export default function App() {
     })
 
   const handleCreateStand = (data) => {
-    const newProducer = { ...data, id: uid('me'), avatar: data.avatar }
+    const newProducer = { ...data, id: uid('me') }
     setProducers((p) => [newProducer, ...p])
     setMe(newProducer)
     setModal(null)
-    addToast('Your stand is live!', '🎉')
+    addToast('Sua barraca está no ar!')
   }
 
   const handlePost = (data) => {
@@ -123,10 +124,10 @@ export default function App() {
     setProducts((p) => [product, ...p])
     setModal(null)
     setView('mine')
-    addToast(`${data.name} posted to the marketplace`, '🌱')
+    addToast(`${data.name} foi pra feira`, product.photo)
   }
 
-  // Turn the basket into an order: save history, decrement stock, clear basket.
+  // Transforma o cesto num pedido: salva no histórico, baixa o estoque e esvazia o cesto.
   const placeOrder = ({ buyerName, groups }) => {
     const order = {
       id: uid('order'),
@@ -135,11 +136,11 @@ export default function App() {
       total: groups.reduce((s, g) => s + g.total, 0),
       groups: groups.map((g) => ({
         producerName: g.producer.name,
-        producerAvatar: g.producer.photo ? '📸' : g.producer.avatar,
+        producerPhoto: g.producer.photo,
         total: g.total,
         lines: g.lines.map((l) => ({
           name: l.product.name,
-          emoji: l.product.emoji,
+          image: l.product.photo,
           qty: l.qty,
           unit: l.product.unit,
           lineTotal: l.qty * l.product.pricePerKg,
@@ -147,7 +148,7 @@ export default function App() {
       })),
     }
 
-    // Reduce available stock for everything that was ordered.
+    // Baixa o estoque de tudo que foi pedido.
     const ordered = {}
     for (const line of cartLines) ordered[line.product.id] = line.qty
     setProducts((list) =>
@@ -163,7 +164,7 @@ export default function App() {
   }
 
   const resetDemo = () => {
-    if (!confirm('Reset the demo? This clears all listings, accounts and orders saved in your browser.')) return
+    if (!confirm('Recomeçar a demonstração? Isso apaga todos os anúncios, contas e pedidos salvos no seu navegador.')) return
     Object.keys(localStorage)
       .filter((k) => k.startsWith(KEY))
       .forEach((k) => localStorage.removeItem(k))
@@ -174,50 +175,48 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand" onClick={() => setView('market')}>
-          <span className="brand-logo">🧺</span>
+          <span className="brand-logo"><Basket size={30} /></span>
           <div>
             <span className="brand-name">Feira</span>
-            <span className="brand-tag">fresh from small farmers</span>
+            <span className="brand-tag">fresquinho, direto do produtor</span>
           </div>
         </div>
 
         <div className="search">
-          <span>🔎</span>
+          <Search size={18} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search produce or farmers…"
+            placeholder="Buscar produto ou produtor…"
           />
         </div>
 
         <div className="topbar-actions">
           {me ? (
             <>
-              <button className="btn btn-primary" onClick={() => setModal('post')}>
-                ＋ Post product
+              <button className="btn btn-primary btn-icon" onClick={() => setModal('post')}>
+                <Plus size={16} /> Anunciar produto
               </button>
               <button
                 className={`btn btn-ghost ${view === 'mine' ? 'active' : ''}`}
                 onClick={() => setView(view === 'mine' ? 'market' : 'mine')}
               >
-                {view === 'mine' ? 'Browse market' : 'My stand'}
+                {view === 'mine' ? 'Ver a feira' : 'Minha barraca'}
               </button>
               <span className="me-chip" title={me.name}
-                style={me.photo ? { backgroundImage: `url(${me.photo})`, backgroundSize: 'cover' } : undefined}>
-                {!me.photo && me.avatar}
-              </span>
+                style={me.photo ? { backgroundImage: `url(${me.photo})`, backgroundSize: 'cover' } : undefined} />
             </>
           ) : (
             <button className="btn btn-ghost" onClick={() => setModal('signup')}>
-              Sell with us
+              Vender na feira
             </button>
           )}
-          <button className="cart-btn ghost-icon" onClick={() => setModal('orders')} title="Your orders">
-            🧾
+          <button className="cart-btn ghost-icon" onClick={() => setModal('orders')} title="Seus pedidos">
+            <Receipt size={20} />
             {orders.length > 0 && <span className="cart-badge">{orders.length}</span>}
           </button>
-          <button className="cart-btn" onClick={() => setCartOpen(true)}>
-            🧺 Basket
+          <button className="cart-btn btn-icon" onClick={() => setCartOpen(true)}>
+            <Basket size={20} /> Cesto
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
         </div>
@@ -226,21 +225,21 @@ export default function App() {
       {view === 'market' && (
         <section className="hero">
           <div className="hero-text">
-            <h1>Real food, straight from the people who grow it.</h1>
+            <h1>Comida de verdade, direto de quem planta.</h1>
             <p>
-              Browse what small farmers harvested this week, fill your basket, and order directly on
-              WhatsApp. No supermarket in between.
+              Veja o que os pequenos produtores colheram esta semana, encha seu cesto e faça o pedido
+              direto no WhatsApp. Sem supermercado no meio do caminho.
             </p>
             {!me && (
               <button className="btn btn-primary btn-lg" onClick={() => setModal('signup')}>
-                I'm a farmer — start selling
+                Sou produtor — quero vender
               </button>
             )}
           </div>
           <div className="hero-stats">
-            <div><strong>{producers.length}</strong><span>farmers</span></div>
-            <div><strong>{products.length}</strong><span>fresh listings</span></div>
-            <div><strong>0%</strong><span>middlemen</span></div>
+            <div><strong>{producers.length}</strong><span>produtores</span></div>
+            <div><strong>{products.length}</strong><span>anúncios fresquinhos</span></div>
+            <div><strong>0%</strong><span>atravessador</span></div>
           </div>
         </section>
       )}
@@ -248,15 +247,13 @@ export default function App() {
       {view === 'mine' && me && (
         <section className="mine-banner">
           <span className={`producer-hero-avatar ${me.photo ? 'photo' : ''}`}
-            style={me.photo ? { backgroundImage: `url(${me.photo})` } : undefined}>
-            {!me.photo && me.avatar}
-          </span>
+            style={me.photo ? { backgroundImage: `url(${me.photo})` } : undefined} />
           <div className="mine-banner-info">
             <h1>{me.name}</h1>
-            <p className="muted">{me.farmer} · 📍 {me.location}</p>
+            <p className="muted with-pin">{me.farmer} · <Pin size={14} /> {me.location}</p>
             {me.bio && <p className="mine-bio">{me.bio}</p>}
           </div>
-          <button className="btn btn-primary" onClick={() => setModal('post')}>＋ Post product</button>
+          <button className="btn btn-primary btn-icon" onClick={() => setModal('post')}><Plus size={16} /> Anunciar produto</button>
         </section>
       )}
 
@@ -270,7 +267,7 @@ export default function App() {
             {c}
           </button>
         ))}
-        <span className="filters-count">{visibleProducts.length} items</span>
+        <span className="filters-count">{visibleProducts.length} itens</span>
       </div>
 
       <main className="grid">
@@ -286,19 +283,19 @@ export default function App() {
         ))}
         {visibleProducts.length === 0 && (
           <div className="empty-state">
-            <span>🌱</span>
+            <span><Sprout size={46} /></span>
             <p>
               {view === 'mine'
-                ? "You haven't posted anything yet. Hit “Post product” to add your first listing."
-                : 'No produce matches your search.'}
+                ? 'Você ainda não anunciou nada. Toque em “Anunciar produto” pra colocar o primeiro.'
+                : 'Nenhum produto combina com a sua busca.'}
             </p>
           </div>
         )}
       </main>
 
       <footer className="site-foot">
-        <span>🧺 Feira — a mock-up marketplace connecting small farmers and local buyers.</span>
-        <button className="link-btn" onClick={resetDemo}>Reset demo data</button>
+        <span className="foot-brand"><Basket size={16} /> Feira — uma feira-demonstração que liga pequenos produtores e quem compra perto.</span>
+        <button className="link-btn" onClick={resetDemo}>Recomeçar a demonstração</button>
       </footer>
 
       <CartDrawer

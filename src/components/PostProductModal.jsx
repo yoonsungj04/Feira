@@ -1,20 +1,14 @@
 import { useState } from 'react'
 import ImageUpload from './ImageUpload.jsx'
-
-const produceEmojis = ['🥑', '🍊', '🍠', '🍅', '🥬', '🌽', '🍋', '🥔', '🍓', '🫑', '🥕', '🍆', '🍇', '🧅']
-const tints = {
-  '🥑': '#2f9e44', '🍊': '#f08c00', '🍠': '#e8590c', '🍅': '#e03131',
-  '🥬': '#37b24d', '🌽': '#f0a000', '🍋': '#f5d000', '🥔': '#a9844f',
-  '🍓': '#e64980', '🫑': '#2b8a3e', '🥕': '#e8590c', '🍆': '#7048e8',
-  '🍇': '#9c36b5', '🧅': '#d9a066',
-}
+import { produceLibrary } from '../data.js'
+import { Close } from './Icons.jsx'
 
 export default function PostProductModal({ onClose, onPost }) {
   const [form, setForm] = useState({
     name: '',
-    emoji: '🥑',
-    photo: null,
-    category: 'Fruit',
+    photo: produceLibrary[0].image,
+    color: produceLibrary[0].color,
+    category: 'Frutas',
     pricePerKg: '',
     available: '',
     harvestedDaysAgo: '0',
@@ -24,20 +18,29 @@ export default function PostProductModal({ onClose, onPost }) {
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const valid = form.name && form.pricePerKg && form.available
 
+  // Ao escolher um item pronto: usa a foto e a cor dele e já sugere nome/categoria.
+  const pickProduce = (item) =>
+    setForm((f) => ({
+      ...f,
+      photo: item.image,
+      color: item.color,
+      category: item.category,
+      name: f.name || item.name,
+    }))
+
   const submit = (e) => {
     e.preventDefault()
     if (!valid) return
     onPost({
       name: form.name,
-      emoji: form.emoji,
       photo: form.photo,
-      color: tints[form.emoji] || '#2f9e44',
+      color: form.color || '#2f9e44',
       category: form.category,
       pricePerKg: Number(form.pricePerKg),
       available: Number(form.available),
       unit: 'kg',
       harvestedDaysAgo: Number(form.harvestedDaysAgo),
-      description: form.description || 'Freshly harvested and ready to go.',
+      description: form.description || 'Colhido fresquinho e pronto pra levar.',
     })
   }
 
@@ -46,78 +49,77 @@ export default function PostProductModal({ onClose, onPost }) {
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <header className="modal-head">
           <div>
-            <h2>Post a product</h2>
-            <p className="muted">A quick listing — pick a photo, say when you picked it, set the amount.</p>
+            <h2>Anunciar um produto</h2>
+            <p className="muted">Um anúncio rapidinho — escolha a foto, diga quando colheu e a quantidade.</p>
           </div>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
+          <button type="button" className="icon-btn" onClick={onClose} aria-label="Fechar"><Close /></button>
         </header>
 
-        <span className="field-label">Add a photo</span>
+        <span className="field-label">Adicione uma foto</span>
         <ImageUpload
           value={form.photo}
           onChange={(photo) => setForm((f) => ({ ...f, photo }))}
-          fallback="📷"
-          hint="Upload a real photo of your produce — or just pick an icon below."
+          hint="Envie uma foto de verdade do seu produto — ou escolha uma das imagens abaixo."
         />
 
-        <span className="field-label">…or pick an icon</span>
+        <span className="field-label">…ou escolha uma imagem</span>
         <div className="emoji-pick">
-          {produceEmojis.map((e) => (
+          {produceLibrary.map((item) => (
             <button
               type="button"
-              key={e}
-              className={`emoji-chip ${form.emoji === e ? 'active' : ''}`}
-              style={form.emoji === e ? { '--tint': tints[e] } : undefined}
-              onClick={() => setForm((f) => ({ ...f, emoji: e }))}
-            >
-              {e}
-            </button>
+              key={item.id}
+              className={`emoji-chip photo ${form.photo === item.image ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${item.image})`, '--tint': item.color }}
+              onClick={() => pickProduce(item)}
+              title={item.name}
+              aria-label={item.name}
+            />
           ))}
         </div>
 
         <div className="grid-2">
           <label className="field">
-            <span>Product name *</span>
-            <input value={form.name} onChange={set('name')} placeholder="e.g. Hass Avocado" />
+            <span>Nome do produto *</span>
+            <input value={form.name} onChange={set('name')} placeholder="ex.: Abacate Hass" />
           </label>
           <label className="field">
-            <span>Category</span>
+            <span>Categoria</span>
             <select value={form.category} onChange={set('category')}>
-              <option>Fruit</option>
-              <option>Vegetables</option>
-              <option>Roots</option>
+              <option>Frutas</option>
+              <option>Verduras</option>
+              <option>Raízes</option>
             </select>
           </label>
         </div>
 
         <div className="grid-3">
           <label className="field">
-            <span>Price per kg *</span>
+            <span>Preço por kg *</span>
             <input type="number" min="0" step="0.5" value={form.pricePerKg} onChange={set('pricePerKg')} placeholder="R$" />
           </label>
           <label className="field">
-            <span>Amount (kg) *</span>
-            <input type="number" min="1" value={form.available} onChange={set('available')} placeholder="e.g. 50" />
+            <span>Quantidade (kg) *</span>
+            <input type="number" min="1" value={form.available} onChange={set('available')} placeholder="ex.: 50" />
           </label>
           <label className="field">
-            <span>Harvested</span>
+            <span>Colhido</span>
             <select value={form.harvestedDaysAgo} onChange={set('harvestedDaysAgo')}>
-              <option value="0">Today</option>
-              <option value="1">Yesterday</option>
-              <option value="2">2 days ago</option>
-              <option value="3">3 days ago</option>
+              <option value="0">Hoje</option>
+              <option value="1">Ontem</option>
+              <option value="2">Há 2 dias</option>
+              <option value="3">Há 3 dias</option>
             </select>
           </label>
         </div>
 
         <label className="field">
-          <span>Describe it a little</span>
-          <textarea rows={2} value={form.description} onChange={set('description')} placeholder="Taste, variety, how it was grown..." />
+          <span>Descreva um pouquinho</span>
+          <textarea rows={2} value={form.description} onChange={set('description')} placeholder="Sabor, variedade, como foi cultivado..." />
         </label>
 
         <footer className="modal-foot">
-          <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn btn-primary" disabled={!valid}>Post to marketplace</button>
+          <button type="button" className="btn btn-ghost" onClick={onClose}>Cancelar</button>
+          <button type="submit" className="btn btn-primary" disabled={!valid}>Publicar na feira</button>
         </footer>
       </form>
     </div>

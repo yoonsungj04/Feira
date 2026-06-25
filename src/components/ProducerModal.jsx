@@ -1,44 +1,41 @@
 import { formatPrice } from '../utils.js'
+import { Close, Pin } from './Icons.jsx'
 
 export default function ProducerModal({ producer, products, onClose, onAdd }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <button className="icon-btn modal-close-float" onClick={onClose} aria-label="Close">✕</button>
+        <button className="icon-btn modal-close-float" onClick={onClose} aria-label="Fechar"><Close /></button>
         <div className="producer-hero">
           <span
             className={`producer-hero-avatar ${producer.photo ? 'photo' : ''}`}
             style={producer.photo ? { backgroundImage: `url(${producer.photo})` } : undefined}
-          >
-            {!producer.photo && producer.avatar}
-          </span>
+          />
           <div>
             <h2>{producer.name}</h2>
-            <p className="muted">{producer.farmer} · 📍 {producer.location}</p>
-            <span className="badge">Selling since {producer.since}</span>
+            <p className="muted with-pin">{producer.farmer} · <Pin size={14} /> {producer.location}</p>
+            <span className="badge">Na feira desde {producer.since}</span>
           </div>
         </div>
 
         {producer.bio && <p className="producer-bio">{producer.bio}</p>}
 
-        <h3 className="producer-section">In season now</h3>
+        <h3 className="producer-section">Da estação, agora</h3>
         <div className="producer-products">
           {products.map((p) => (
             <div className="mini-product" key={p.id}>
               <span
                 className={`mini-emoji ${p.photo ? 'photo' : ''}`}
                 style={p.photo ? { backgroundImage: `url(${p.photo})` } : { background: p.color }}
-              >
-                {!p.photo && p.emoji}
-              </span>
+              />
               <div className="mini-info">
                 <strong>{p.name}</strong>
-                <small>{formatPrice(p.pricePerKg)}/{p.unit} · {p.available} {p.unit} left</small>
+                <small>{formatPrice(p.pricePerKg)}/{p.unit} · restam {p.available} {p.unit}</small>
               </div>
-              <button className="btn btn-add btn-sm" onClick={() => onAdd(p)}>Add</button>
+              <button className="btn btn-add btn-sm" onClick={() => onAdd(p)}>Adicionar</button>
             </div>
           ))}
-          {products.length === 0 && <p className="muted">No active listings right now.</p>}
+          {products.length === 0 && <p className="muted">Nenhum anúncio ativo no momento.</p>}
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ImageUpload from './ImageUpload.jsx'
-
-const avatars = ['👨🏽‍🌾', '👩🏼‍🌾', '🧑🏻‍🌾', '👨🏿‍🌾', '👩🏽‍🌾', '🧑🏾‍🌾']
+import { avatarLibrary } from '../data.js'
+import { Close } from './Icons.jsx'
 
 export default function SignUpModal({ onClose, onCreate }) {
   const [form, setForm] = useState({
@@ -10,8 +10,7 @@ export default function SignUpModal({ onClose, onCreate }) {
     location: '',
     whatsapp: '',
     bio: '',
-    avatar: avatars[0],
-    photo: null,
+    photo: avatarLibrary[0],
   })
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -28,70 +27,69 @@ export default function SignUpModal({ onClose, onCreate }) {
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <header className="modal-head">
           <div>
-            <h2>Set up your farm stand</h2>
-            <p className="muted">Tell buyers who you are and where your produce comes from.</p>
+            <h2>Monte sua barraca</h2>
+            <p className="muted">Conte pra quem compra quem é você e de onde vêm seus produtos.</p>
           </div>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
+          <button type="button" className="icon-btn" onClick={onClose} aria-label="Fechar"><Close /></button>
         </header>
 
-        <span className="field-label">Your photo</span>
+        <span className="field-label">Sua foto</span>
         <ImageUpload
           value={form.photo}
           onChange={(photo) => setForm((f) => ({ ...f, photo }))}
-          fallback="🧑‍🌾"
           shape="circle"
-          hint="A friendly face builds trust — or pick an avatar below."
+          hint="Um rostinho amigável passa confiança — ou escolha uma foto abaixo."
         />
 
-        <span className="field-label">…or pick an avatar</span>
+        <span className="field-label">…ou escolha uma foto</span>
         <div className="avatar-pick">
-          {avatars.map((a) => (
+          {avatarLibrary.map((a) => (
             <button
               type="button"
               key={a}
-              className={`avatar-chip ${form.avatar === a ? 'active' : ''}`}
-              onClick={() => setForm((f) => ({ ...f, avatar: a }))}
-            >
-              {a}
-            </button>
+              className={`avatar-chip photo ${form.photo === a ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${a})` }}
+              onClick={() => setForm((f) => ({ ...f, photo: a }))}
+              aria-label="Escolher esta foto"
+            />
           ))}
         </div>
 
         <div className="grid-2">
           <label className="field">
-            <span>Your name *</span>
-            <input value={form.farmer} onChange={set('farmer')} placeholder="e.g. Ana Costa" />
+            <span>Seu nome *</span>
+            <input value={form.farmer} onChange={set('farmer')} placeholder="ex.: Ana Costa" />
           </label>
           <label className="field">
-            <span>Farm / stand name *</span>
-            <input value={form.name} onChange={set('name')} placeholder="e.g. Sítio das Frutas" />
+            <span>Nome da barraca / sítio *</span>
+            <input value={form.name} onChange={set('name')} placeholder="ex.: Sítio das Frutas" />
           </label>
         </div>
 
         <div className="grid-2">
           <label className="field">
-            <span>Where are you? *</span>
-            <input value={form.location} onChange={set('location')} placeholder="City, region" />
+            <span>Onde você fica? *</span>
+            <input value={form.location} onChange={set('location')} placeholder="Cidade, região" />
           </label>
           <label className="field">
-            <span>WhatsApp number</span>
+            <span>Número de WhatsApp</span>
             <input value={form.whatsapp} onChange={set('whatsapp')} placeholder="55 11 9 9999 0000" />
           </label>
         </div>
 
         <label className="field">
-          <span>A little about you and your farm</span>
+          <span>Um pouco sobre você e sua roça</span>
           <textarea
             rows={3}
             value={form.bio}
             onChange={set('bio')}
-            placeholder="What do you grow? How do you farm? What makes your produce special?"
+            placeholder="O que você planta? Como você cultiva? O que faz seu produto ser especial?"
           />
         </label>
 
         <footer className="modal-foot">
-          <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn btn-primary" disabled={!valid}>Create my stand</button>
+          <button type="button" className="btn btn-ghost" onClick={onClose}>Cancelar</button>
+          <button type="submit" className="btn btn-primary" disabled={!valid}>Criar minha barraca</button>
         </footer>
       </form>
     </div>

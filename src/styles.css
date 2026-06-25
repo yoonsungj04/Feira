@@ -43,7 +43,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.brand-logo { font-size: 30px; }
+.brand-logo { display: flex; color: var(--green); }
 .brand-name { display: block; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
 .brand-tag { display: block; font-size: 11px; color: var(--muted); margin-top: -2px; }
 
@@ -58,6 +58,7 @@ button { font-family: inherit; cursor: pointer; }
   border: 1px solid var(--line);
   border-radius: 999px;
 }
+.search svg { color: var(--muted); flex-shrink: 0; }
 .search input { border: none; outline: none; width: 100%; font-size: 15px; background: transparent; }
 
 .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
@@ -118,7 +119,11 @@ button { font-family: inherit; cursor: pointer; }
 .icon-btn {
   border: none; background: transparent; font-size: 18px;
   width: 36px; height: 36px; border-radius: 50%; color: var(--muted);
+  display: grid; place-items: center;
 }
+/* Buttons that mix an icon with a text label. */
+.btn-icon, .cart-btn.btn-icon { display: inline-flex; align-items: center; gap: 7px; }
+.btn-icon svg { flex-shrink: 0; }
 .icon-btn:hover { background: #f0ece2; }
 
 /* ---------- Hero ---------- */
@@ -385,6 +390,26 @@ button { font-family: inherit; cursor: pointer; }
 .producer-hero-avatar.photo { width: 64px; height: 64px; border-radius: 50%; }
 .me-chip { background-size: cover; background-position: center; overflow: hidden; }
 
+/* Real-image pickers (produce + avatars) */
+.avatar-chip.photo, .emoji-chip.photo {
+  background-size: cover; background-position: center; font-size: 0;
+}
+.avatar-chip.photo { border-radius: 50%; }
+
+/* Small thumbnails inline in checkout / orders / confirmation */
+.ck-item { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.ck-thumb {
+  width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+  background-size: cover; background-position: center; background-color: var(--green-soft);
+}
+.ck-thumb.round { border-radius: 50%; }
+
+/* Inline pin in producer/location lines */
+.with-pin { display: inline-flex; align-items: center; gap: 4px; }
+.with-pin svg { color: var(--green-dark); }
+
+.foot-brand { display: inline-flex; align-items: center; gap: 6px; }
+
 .card-out { opacity: 0.72; }
 .card-out-badge {
   position: absolute; top: 10px; right: 10px;
@@ -429,7 +454,12 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- Confirmation ---------- */
 .modal-narrow { width: min(440px, 100%); text-align: center; }
-.confirm-check { font-size: 56px; margin-bottom: 6px; animation: pop 0.3s ease; }
+.confirm-check {
+  width: 72px; height: 72px; margin: 0 auto 10px;
+  display: grid; place-items: center;
+  background: var(--green-soft); color: var(--green-dark);
+  border-radius: 50%; animation: pop 0.3s ease;
+}
 .confirm-title { margin: 0 0 6px; }
 .confirm-sub { margin: 0 auto 18px; max-width: 320px; }
 .confirm-summary {
@@ -463,7 +493,11 @@ button { font-family: inherit; cursor: pointer; }
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   animation: toastin 0.2s ease;
 }
-.toast-emoji { font-size: 18px; }
+.toast-emoji { display: grid; place-items: center; color: var(--whatsapp); }
+.toast-thumb {
+  width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+  background-size: cover; background-position: center;
+}
 @keyframes toastin { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 .site-foot { display: flex; flex-direction: column; gap: 8px; align-items: center; }

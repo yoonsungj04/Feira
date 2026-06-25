@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { formatPrice, buildWhatsAppMessage, waLink } from '../utils.js'
+import { Close, Check, WhatsApp } from './Icons.jsx'
 
-// Groups the basket by producer and produces one WhatsApp message per farmer.
+// Agrupa o cesto por produtor e gera uma mensagem de WhatsApp para cada um.
 export default function CheckoutModal({ groups, buyerName, onClose, onConfirm }) {
   const [name, setName] = useState(buyerName || '')
   const [sent, setSent] = useState({})
@@ -29,21 +30,21 @@ export default function CheckoutModal({ groups, buyerName, onClose, onConfirm })
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <header className="modal-head">
           <div>
-            <h2>Send your orders</h2>
+            <h2>Enviar seus pedidos</h2>
             <p className="muted">
-              You're ordering from {groups.length} farmer{groups.length > 1 ? 's' : ''}. Each one gets a
-              separate WhatsApp message with just their items.
+              Você está comprando de {groups.length} produtor{groups.length > 1 ? 'es' : ''}. Cada um
+              recebe uma mensagem separada no WhatsApp, só com os itens dele.
             </p>
           </div>
-          <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
+          <button className="icon-btn" onClick={onClose} aria-label="Fechar"><Close /></button>
         </header>
 
         <label className="field">
-          <span>Your name (optional)</span>
+          <span>Seu nome (opcional)</span>
           <input
             type="text"
             value={name}
-            placeholder="So the farmer knows who's ordering"
+            placeholder="Pra o produtor saber quem está pedindo"
             onChange={(e) => setName(e.target.value)}
           />
         </label>
@@ -52,7 +53,10 @@ export default function CheckoutModal({ groups, buyerName, onClose, onConfirm })
           {groups.map((group) => (
             <div className="checkout-group" key={group.producer.id}>
               <div className="checkout-group-head">
-                <span className="card-producer-avatar">{group.producer.avatar}</span>
+                <span
+                  className={`card-producer-avatar ${group.producer.photo ? 'photo' : ''}`}
+                  style={group.producer.photo ? { backgroundImage: `url(${group.producer.photo})` } : undefined}
+                />
                 <div>
                   <strong>{group.producer.name}</strong>
                   <small>{group.producer.farmer} · {group.producer.location}</small>
@@ -61,15 +65,20 @@ export default function CheckoutModal({ groups, buyerName, onClose, onConfirm })
               <ul className="checkout-items">
                 {group.lines.map((l) => (
                   <li key={l.product.id}>
-                    <span>{l.product.emoji} {l.qty} {l.product.unit} · {l.product.name}</span>
+                    <span className="ck-item">
+                      <span className="ck-thumb" style={{ backgroundImage: `url(${l.product.photo})` }} />
+                      {l.qty} {l.product.unit} · {l.product.name}
+                    </span>
                     <span>{formatPrice(l.qty * l.product.pricePerKg)}</span>
                   </li>
                 ))}
               </ul>
               <div className="checkout-group-foot">
                 <span className="checkout-subtotal">Subtotal {formatPrice(group.total)}</span>
-                <button className="btn btn-whatsapp" onClick={() => send(group)}>
-                  {sent[group.producer.id] ? '✓ Message opened' : `Message ${group.producer.farmer.split(' ')[0]}`}
+                <button className="btn btn-whatsapp btn-icon" onClick={() => send(group)}>
+                  {sent[group.producer.id]
+                    ? <><Check size={16} /> Mensagem aberta</>
+                    : <><WhatsApp size={16} /> Chamar {group.producer.farmer.split(' ')[0]}</>}
                 </button>
               </div>
             </div>
@@ -78,20 +87,20 @@ export default function CheckoutModal({ groups, buyerName, onClose, onConfirm })
 
         <div className="checkout-place">
           <div className="checkout-grand">
-            <span>Order total</span>
+            <span>Total do pedido</span>
             <strong>{formatPrice(total)}</strong>
           </div>
           <button
             className="btn btn-primary btn-block btn-lg"
             onClick={() => onConfirm({ buyerName: name, groups })}
           >
-            {anySent ? 'Done — place my order' : 'Place order'}
+            {anySent ? 'Pronto — confirmar pedido' : 'Confirmar pedido'}
           </button>
         </div>
 
         <p className="checkout-hint">
-          💡 In this mock-up the WhatsApp buttons open a ready-to-send order (numbers are fake demo
-          data). “Place order” saves it to your order history and updates each farmer's stock.
+          Nesta demonstração, os botões do WhatsApp abrem um pedido pronto pra enviar (os números são
+          fictícios). “Confirmar pedido” salva no seu histórico e atualiza o estoque de cada produtor.
         </p>
       </div>
     </div>

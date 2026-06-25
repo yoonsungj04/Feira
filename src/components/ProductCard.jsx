@@ -1,4 +1,5 @@
 import { formatPrice, harvestLabel } from '../utils.js'
+import { Sprout } from './Icons.jsx'
 
 export default function ProductCard({ product, producer, inCartQty, onAdd, onOpenProducer }) {
   const soldOut = product.available <= 0
@@ -15,12 +16,12 @@ export default function ProductCard({ product, producer, inCartQty, onAdd, onOpe
             : { '--tint': product.color }
         }
       >
-        {!product.photo && <span className="card-emoji">{product.emoji}</span>}
+        {!product.photo && <span className="card-emoji"><Sprout size={56} /></span>}
         <span className="card-harvest">{harvestLabel(product.harvestedDaysAgo)}</span>
         {soldOut ? (
-          <span className="card-out-badge">Sold out</span>
+          <span className="card-out-badge">Esgotado</span>
         ) : (
-          low && <span className="card-low">Only {product.available} {product.unit} left</span>
+          low && <span className="card-low">Só restam {product.available} {product.unit}</span>
         )}
       </div>
 
@@ -39,9 +40,7 @@ export default function ProductCard({ product, producer, inCartQty, onAdd, onOpe
           <span
             className={`card-producer-avatar ${producerPhoto ? 'photo' : ''}`}
             style={producerPhoto ? { backgroundImage: `url(${producerPhoto})` } : undefined}
-          >
-            {!producerPhoto && producer.avatar}
-          </span>
+          />
           <span>
             <strong>{producer.name}</strong>
             <small>{producer.location}</small>
@@ -50,10 +49,10 @@ export default function ProductCard({ product, producer, inCartQty, onAdd, onOpe
 
         <button className="btn btn-add" onClick={() => onAdd(product)} disabled={soldOut}>
           {soldOut
-            ? 'Sold out'
+            ? 'Esgotado'
             : inCartQty > 0
-              ? `In basket · ${inCartQty} ${product.unit}`
-              : 'Add to basket'}
+              ? `No cesto · ${inCartQty} ${product.unit}`
+              : 'Adicionar ao cesto'}
         </button>
       </div>
     </article>

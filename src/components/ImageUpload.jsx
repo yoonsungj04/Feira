@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react'
 import { fileToScaledDataURL } from '../image.js'
+import { Camera } from './Icons.jsx'
 
-// A click-to-upload photo control with preview. Used for product photos
-// and farm profile photos. Shows `fallback` (an emoji) when empty.
-export default function ImageUpload({ value, onChange, fallback = '📷', shape = 'rect', hint }) {
+// Controle de foto: clique pra enviar, com pré-visualização. Usado para a foto
+// do produto e a foto do perfil. Mostra `fallback` (um ícone) quando vazio.
+export default function ImageUpload({ value, onChange, fallback, shape = 'rect', hint }) {
   const inputRef = useRef(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +18,7 @@ export default function ImageUpload({ value, onChange, fallback = '📷', shape 
       const dataUrl = await fileToScaledDataURL(file)
       onChange(dataUrl)
     } catch {
-      setError("Couldn't load that image")
+      setError('Não consegui carregar essa imagem')
     } finally {
       setBusy(false)
     }
@@ -31,15 +32,15 @@ export default function ImageUpload({ value, onChange, fallback = '📷', shape 
         onClick={() => inputRef.current?.click()}
         style={value ? { backgroundImage: `url(${value})` } : undefined}
       >
-        {!value && <span className="upload-fallback">{busy ? '…' : fallback}</span>}
-        {value && <span className="upload-edit">Change</span>}
+        {!value && <span className="upload-fallback">{busy ? '…' : (fallback || <Camera size={30} />)}</span>}
+        {value && <span className="upload-edit">Trocar</span>}
       </button>
       <input ref={inputRef} type="file" accept="image/*" hidden onChange={pick} />
       <div className="upload-side">
         {hint && <small className="muted">{hint}</small>}
         {value && (
           <button type="button" className="link-btn" onClick={() => onChange(null)}>
-            Remove photo
+            Remover foto
           </button>
         )}
         {error && <small className="upload-error">{error}</small>}

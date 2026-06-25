@@ -1,23 +1,23 @@
 export function formatPrice(value) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   }).format(value)
 }
 
 export function harvestLabel(daysAgo) {
-  if (daysAgo <= 0) return 'Harvested today'
-  if (daysAgo === 1) return 'Harvested yesterday'
-  return `Harvested ${daysAgo} days ago`
+  if (daysAgo <= 0) return 'Colhido hoje'
+  if (daysAgo === 1) return 'Colhido ontem'
+  return `Colhido há ${daysAgo} dias`
 }
 
-// Build the WhatsApp order message that a buyer sends to a single producer.
+// Monta a mensagem de pedido que o comprador envia para um produtor no WhatsApp.
 export function buildWhatsAppMessage({ buyerName, producer, lines, total }) {
-  const greeting = `Hi ${producer.farmer}! 👋 I found your stand on *Feira* and I'd like to order:`
+  const greeting = `Oi, ${producer.farmer}! Achei sua barraca na *Feira* e queria fazer um pedido:`
   const items = lines
-    .map((l) => `• ${l.qty} ${l.unit} of ${l.name} — ${formatPrice(l.qty * l.pricePerKg)}`)
+    .map((l) => `• ${l.qty} ${l.unit} de ${l.name} — ${formatPrice(l.qty * l.pricePerKg)}`)
     .join('\n')
-  const footer = `\n*Total: ${formatPrice(total)}*\n\nWhen could I pick this up? Thank you!`
+  const footer = `\n*Total: ${formatPrice(total)}*\n\nQuando eu poderia buscar? Obrigado!`
   const from = buyerName ? `\n\n— ${buyerName}` : ''
   return `${greeting}\n\n${items}\n${footer}${from}`
 }

@@ -1,4 +1,5 @@
 import { formatPrice } from '../utils.js'
+import { Basket, Close } from './Icons.jsx'
 
 export default function CartDrawer({ open, lines, total, onClose, onChangeQty, onRemove, onCheckout }) {
   return (
@@ -6,15 +7,15 @@ export default function CartDrawer({ open, lines, total, onClose, onChangeQty, o
       <div className={`overlay ${open ? 'show' : ''}`} onClick={onClose} />
       <aside className={`drawer ${open ? 'open' : ''}`} aria-hidden={!open}>
         <header className="drawer-head">
-          <h2>Your basket</h2>
-          <button className="icon-btn" onClick={onClose} aria-label="Close basket">✕</button>
+          <h2>Seu cesto</h2>
+          <button className="icon-btn" onClick={onClose} aria-label="Fechar cesto"><Close /></button>
         </header>
 
         {lines.length === 0 ? (
           <div className="drawer-empty">
-            <span className="drawer-empty-emoji">🧺</span>
-            <p>Your basket is empty.</p>
-            <small>Add some fresh produce to get started.</small>
+            <span className="drawer-empty-emoji"><Basket size={54} /></span>
+            <p>Seu cesto está vazio.</p>
+            <small>Adicione uns produtos fresquinhos pra começar.</small>
           </div>
         ) : (
           <div className="drawer-list">
@@ -27,9 +28,7 @@ export default function CartDrawer({ open, lines, total, onClose, onChangeQty, o
                       ? { backgroundImage: `url(${line.product.photo})` }
                       : { background: line.product.color }
                   }
-                >
-                  {!line.product.photo && line.product.emoji}
-                </span>
+                />
                 <div className="line-info">
                   <strong>{line.product.name}</strong>
                   <small>{line.producer.name}</small>
@@ -37,11 +36,11 @@ export default function CartDrawer({ open, lines, total, onClose, onChangeQty, o
                 </div>
                 <div className="line-actions">
                   <div className="stepper">
-                    <button onClick={() => onChangeQty(line.product.id, line.qty - 1)} aria-label="Less">−</button>
+                    <button onClick={() => onChangeQty(line.product.id, line.qty - 1)} aria-label="Menos">−</button>
                     <span>{line.qty} {line.product.unit}</span>
-                    <button onClick={() => onChangeQty(line.product.id, line.qty + 1)} aria-label="More">+</button>
+                    <button onClick={() => onChangeQty(line.product.id, line.qty + 1)} aria-label="Mais">+</button>
                   </div>
-                  <button className="line-remove" onClick={() => onRemove(line.product.id)}>Remove</button>
+                  <button className="line-remove" onClick={() => onRemove(line.product.id)}>Remover</button>
                 </div>
               </div>
             ))}
@@ -55,10 +54,10 @@ export default function CartDrawer({ open, lines, total, onClose, onChangeQty, o
               <strong>{formatPrice(total)}</strong>
             </div>
             <p className="drawer-note">
-              Your order is split by farmer — each one gets their own WhatsApp message.
+              Seu pedido é separado por produtor — cada um recebe a própria mensagem no WhatsApp.
             </p>
             <button className="btn btn-primary btn-block" onClick={onCheckout}>
-              Checkout on WhatsApp
+              Fechar pedido no WhatsApp
             </button>
           </footer>
         )}
