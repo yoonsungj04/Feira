@@ -225,7 +225,8 @@ export default function App() {
       {view === 'market' && (
         <section className="hero">
           <div className="hero-text">
-            <h1>Comida de verdade, direto de quem planta.</h1>
+            <span className="hero-eyebrow"><Sprout size={14} /> Colhido esta semana, pertinho de você</span>
+            <h1>Comida de verdade, direto de <em>quem planta</em>.</h1>
             <p>
               Veja o que os pequenos produtores colheram esta semana, encha seu cesto e faça o pedido
               direto no WhatsApp. Sem supermercado no meio do caminho.
@@ -343,6 +344,23 @@ export default function App() {
           onAdd={(p) => addToCart(p)}
         />
       )}
+
+      <nav className="mobilebar">
+        <button className={view === 'market' ? 'active' : ''} onClick={() => { setView('market'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+          <span><Sprout size={20} /></span>Feira
+        </button>
+        <button onClick={() => setModal('orders')}>
+          <span className="mb-icon"><Receipt size={20} />{orders.length > 0 && <i>{orders.length}</i>}</span>Pedidos
+        </button>
+        {me && (
+          <button onClick={() => setModal('post')}>
+            <span><Plus size={20} /></span>Anunciar
+          </button>
+        )}
+        <button onClick={() => setCartOpen(true)}>
+          <span className="mb-icon"><Basket size={20} />{cartCount > 0 && <i>{cartCount}</i>}</span>Cesto
+        </button>
+      </nav>
 
       <Toasts toasts={toasts} />
     </div>

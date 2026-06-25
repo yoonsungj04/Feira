@@ -1,9 +1,10 @@
 import { formatPrice, harvestLabel } from '../utils.js'
-import { Sprout } from './Icons.jsx'
+import { Sprout, Pin } from './Icons.jsx'
 
 export default function ProductCard({ product, producer, inCartQty, onAdd, onOpenProducer }) {
   const soldOut = product.available <= 0
   const low = !soldOut && product.available <= 30
+  const fresh = product.harvestedDaysAgo <= 0
   const producerPhoto = producer.photo
 
   return (
@@ -17,12 +18,28 @@ export default function ProductCard({ product, producer, inCartQty, onAdd, onOpe
         }
       >
         {!product.photo && <span className="card-emoji"><Sprout size={56} /></span>}
-        <span className="card-harvest">{harvestLabel(product.harvestedDaysAgo)}</span>
-        {soldOut ? (
-          <span className="card-out-badge">Esgotado</span>
-        ) : (
-          low && <span className="card-low">Só restam {product.available} {product.unit}</span>
-        )}
+
+        <div className="card-top">
+          <span className={`pill pill-harvest ${fresh ? 'fresh' : ''}`}>
+            {fresh && <span className="dot" />}{harvestLabel(product.harvestedDaysAgo)}
+          </span>
+          {soldOut ? (
+            <span className="pill pill-out">Esgotado</span>
+          ) : (
+            low && <span className="pill pill-low">restam {product.available} {product.unit}</span>
+          )}
+        </div>
+
+        <button className="card-producer" onClick={() => onOpenProducer(producer)}>
+          <span
+            className={`card-producer-avatar ${producerPhoto ? 'photo' : ''}`}
+            style={producerPhoto ? { backgroundImage: `url(${producerPhoto})` } : undefined}
+          />
+          <span className="card-producer-text">
+            <strong>{producer.name}</strong>
+            <small className="with-pin"><Pin size={12} /> {producer.location}</small>
+          </span>
+        </button>
       </div>
 
       <div className="card-body">
@@ -35,17 +52,6 @@ export default function ProductCard({ product, producer, inCartQty, onAdd, onOpe
         </div>
 
         <p className="card-desc">{product.description}</p>
-
-        <button className="card-producer" onClick={() => onOpenProducer(producer)}>
-          <span
-            className={`card-producer-avatar ${producerPhoto ? 'photo' : ''}`}
-            style={producerPhoto ? { backgroundImage: `url(${producerPhoto})` } : undefined}
-          />
-          <span>
-            <strong>{producer.name}</strong>
-            <small>{producer.location}</small>
-          </span>
-        </button>
 
         <button className="btn btn-add" onClick={() => onAdd(product)} disabled={soldOut}>
           {soldOut
